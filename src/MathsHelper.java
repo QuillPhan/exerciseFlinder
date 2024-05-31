@@ -22,7 +22,7 @@ public class MathsHelper {
     public int numQuestions;
     public int input;
     public String choice;
-    
+
     public MathsHelper() {
         scan = new Scanner(System.in);
     }
@@ -31,26 +31,26 @@ public class MathsHelper {
      */
     public void letsPlay() {
         //Student student = new Student();
-        
+
         displayWelcome();
-        
+
         while (true) {
             displayYearMenu();
             choice = scan.next();
             while (!isYearLevel(choice)) {
-                System.out.println("That's not a valid number. Please enter valid number (0 - 9)");                
-                yearLevel = scan.nextInt();
+                System.out.println("That's not a valid number. Please enter valid number (0 - 9)");
+                choice = scan.next();
             }
-            setYearLevel(yearLevel);
+            setYearLevel(Integer.parseInt(choice));
             displayQuestionMenu();
             choice = scan.next();
             while (!isQuestion(choice)) {
                 System.out.println("That's not a valid number. Please enter valid number (1 - 5)");
-                numQuestions = scan.nextInt();
+                choice = scan.next();
             }
-            setnumQuestions(numQuestions);
-            
-            
+            setnumQuestions(Integer.parseInt(choice));
+
+
             if (confirmSessionDetails(yearLevel, numQuestions)) {
                 //student.setSessionDetails(yearLevel, numQuestions);
                 //Student student = new Student(YearLevelType.getYearLevelType(yearLevel), numQuestions);
@@ -78,14 +78,14 @@ public class MathsHelper {
                 askQuestion(quiz);
                 break;
             }else {
-                
+
                 //choice = scan.next();
-                
+
                 continue;
             }
-            
+
         }
-        
+
 
     }
 
@@ -146,21 +146,21 @@ public class MathsHelper {
     public boolean confirmSessionDetails(int year, int questions) {
         String yearLevel = (year == 0) ? "Reception" : "Year " + year;
         int numQuestions = getQuestions(questions);
-        
+
 
         System.out.print("You are a " + yearLevel + " student and want to do " + numQuestions + " questions. Is this correct (Y/N)?: ");
-        
+
         String choice = scan.next();
         if (choice.equalsIgnoreCase("N")) {
             return false;
         }
-        
+
         return choice.equalsIgnoreCase("Y");
     }
 
-        
 
-    
+
+
     interface YearLevel {
         YearLevelType getYearLevelType(int yearLevel);
     }
@@ -252,14 +252,14 @@ public class MathsHelper {
 
 
     public void askQuestion(QuestionGenerator quiz) {
-        
+
         int countQuestion = 1;
         int correctCount = 0;
         int totalQuestions = 0;
         quiz.generateQuestions(getQuestions(numQuestions));
         ArrayList<Question> questions = quiz.getQuestions();
         for (int i = 0; i < getQuestions(numQuestions); i++) {
-            
+
                 System.out.println(questions.get(i).getQuestion());
                 System.out.print("Your answer: ");
                 String input = scan.next();
@@ -267,7 +267,7 @@ public class MathsHelper {
                     break;
                 }
                 int actualAnswer = Integer.parseInt(input);
-    
+
                 if (actualAnswer == Integer.valueOf(questions.get(i).getAnswer())) {
                     System.out.println("Correct! Well done!");
                     correctCount++;
@@ -275,10 +275,10 @@ public class MathsHelper {
                     System.out.println("Bad luck, that was incorrect. The correct answer was " + questions.get(i).getAnswer() + ".");
                 }
                 totalQuestions++;
-                
+
                 double percentage = (double) correctCount / totalQuestions * 100;
                 System.out.println("Your current percentage is " + percentage + "%.");
-                                
+
                 if(countQuestion / 5 == 1){
                     System.out.println("You are doing really well! Maybe try a harder difficulty.");
                     countQuestion=0;
@@ -309,16 +309,16 @@ public class MathsHelper {
                     //return;
                 }
             }
-            
-        
+
+
     }
 
     public boolean isYearLevel(String choice) {
         try {
-            
+
             int c = Integer.parseInt(choice);
             return c >= 0 && c <= 9;
-            
+
         } catch (NumberFormatException e) {
             return false;
         }
