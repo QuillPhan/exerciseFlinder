@@ -17,7 +17,7 @@ public class MathsHelper {
     private YearLevelType yearLevelType;
     // private QuestionType questionType;
     private RangeLevel rangeLevel;
-    QuestionGenerator quiz;
+    public QuestionGenerator quiz;
     public int yearLevel;
     public int numQuestions;
     public int input;
@@ -33,12 +33,12 @@ public class MathsHelper {
         //Student student = new Student();
 
         displayWelcome();
-
-        while (true) {
+        boolean quit = false;
+        while (!quit) {
             displayYearMenu();
             choice = scan.next();
             while (!isYearLevel(choice)) {
-                System.out.println("That's not a valid number. Please enter valid number (0 - 9)");
+                System.out.println("That's not a valid number. Please enter valid number (0 - 7)");
                 choice = scan.next();
             }
             setYearLevel(Integer.parseInt(choice));
@@ -68,13 +68,7 @@ public class MathsHelper {
                 // System.out.println(quiz2.getMin());
                 // System.out.println(quiz2.getMax());
                 // System.out.println(quiz2.getOperations());
-                quiz = new QuestionGenerator(yearLevel);
-                    // quiz.generateQuestions(getQuestions(numQuestions));
-                    // ArrayList<Question> questions = quiz.getQuestions();
-                    // for (Question question : questions) {
-                    //     System.out.println(question.getQuestion());
-                    // }
-                askQuestion(quiz);
+                
                 //continue;
                 break;
                 // if (choice.equalsIgnoreCase("Q")) {
@@ -90,9 +84,21 @@ public class MathsHelper {
             
             
         }
-        
+        //QuestionGenerator questionGenerator = new QuestionGenerator();
+        // setQuiz(questionGenerator);
+        // QuestionGenerator quiz = getQuiz();
 
+        quiz = new QuestionGenerator(yearLevel);
+        quiz.generateQuestions(getQuestions(numQuestions));
+        askQuestion();
+                    // quiz.generateQuestions(getQuestions(numQuestions));
+                    // ArrayList<Question> questions = quiz.getQuestions();
+                    // for (Question question : questions) {
+                    //     System.out.println(question.getQuestion());
+                    // }
+                    
 
+                
     }
 
     //-------------------------operational methods------------------------------
@@ -260,16 +266,21 @@ public class MathsHelper {
     }
 
 
-    public void askQuestion(QuestionGenerator quiz) {
+    public void askQuestion() {
 
         int countQuestion = 1;
         int correctCount = 0;
         int totalQuestions = 0;
-        
         int hintCounter = 0;
-        quiz.generateQuestions(getQuestions(numQuestions));
+        //quiz.generateQuestions(getQuestions(numQuestions));
         ArrayList<Question> questions = quiz.getQuestions();
-        for (int i = 0; i < getQuestions(numQuestions); i++) {
+        boolean quit = false;
+        String correctAnswer ;
+        
+        double calculatedPercentage ;
+        double totalPercentage;
+        while (!quit) {
+            for (int i = 0; i < getQuestions(numQuestions); i++) {
 
                 System.out.println(questions.get(i).getQuestion());
                 System.out.print("Your answer: ");
@@ -293,10 +304,10 @@ public class MathsHelper {
                         hint[j] = hintArray[j];
                     }
                     String hintString = new String(hint); // Convert char[] to String
-                    System.out.println(questions.get(i).getQuestion() + " " + hintString);
+                    System.out.println(questions.get(i).getQuestion() + " " + hintString +" : ");
                     
-                    System.out.print("Your answer: ");
                     input = scan.next();
+
                     if(hintCounter == hintArray.length - 1){
                         // System.out.println("Bad luck, that was incorrect. The correct answer was " + questions.get(i).getAnswer() + ".");
                         // totalQuestions++;
@@ -328,8 +339,9 @@ public class MathsHelper {
                 }
                 totalQuestions++;
 
-                double percentage = (double) correctCount / totalQuestions * 100;
-                System.out.println("Your current percentage is " + percentage + "%.");
+                quiz.setCalculatedPercentage(correctCount, totalQuestions);
+                calculatedPercentage = quiz.getCalculatedPercentage();
+                System.out.println("Your current percentage is " + calculatedPercentage  + "%.");
 
                 if(countQuestion / 5 == 1){
                     System.out.println("You are doing really well! Maybe try a harder difficulty.");
@@ -337,33 +349,85 @@ public class MathsHelper {
                 }
                 countQuestion++;
 
-                System.out.print("Did you want to start a new Session or Quit (S/Q)?");
-                choice = scan.next();
-                if (choice.equalsIgnoreCase("Q")) {
-                    //break;
-                    return;
-                }
-                while (!choice.equalsIgnoreCase("S")) {
-                    System.out.print("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
-                    choice = scan.next();
-                    if (choice.equalsIgnoreCase("Q")) {
-                        break;
-                        //return;
-                    }
-                }
-        }
-        double overallPercentage = (double) correctCount / totalQuestions * 100;
-        if((totalQuestions==0)){
-            System.out.println("Hope to see you again!");
-            return;
-        }
-        String finish1 = "Your total percentage was " + overallPercentage + "%. ";        
-        System.out.println(finish1);
+                //quiz.setCalculatedPercentage(correctCount, totalQuestions);
+                //calculatedPercentage = quiz.getCalculatedPercentage();
 
-        String finish2 = "Well done! That was a good effort, but you may need to work on some expressions.";
-        System.out.println(finish2);
-       
+                totalPercentage = (double) correctCount / quiz.getQuestions().size() * 100;
+                System.out.printf("Your total percentage was %.2f%%%n", totalPercentage);
+                System.out.println(getMessageForPercentage(totalPercentage));
 
+                // if (totalPercentage < 40) {
+                //     System.out.println("Bad luck. Try practicing with some lower year levels to build your confidence and skills.");
+                // } else if (totalPercentage >= 40 && totalPercentage < 50) {
+                //     System.out.println("That was a good effort, but you may need to work on some expressions.");
+                // } else if (totalPercentage >= 50 && totalPercentage < 60) {
+                //     System.out.println("Congratulations you passed. Keep practicing at this year level to improve your score.");
+                // } else if (totalPercentage >= 60 && totalPercentage < 75) {
+                //     System.out.println("Well done. That was a good effort.");
+                // } else if (totalPercentage >= 75 && totalPercentage < 85) {
+                //     System.out.println("Good job. You should try the next year level in your next test.");
+                // } else if (totalPercentage >= 85) {
+                //     System.out.println("Excellent work! You really know your stuff. Try the harder levels next time.");
+                // }
+
+                // System.out.printf("Your current percentage is %.2f%%%n", calculatedPercentage);
+                // if((totalQuestions==0)){
+                    
+                //     return;
+                // }
+                // String finish1 = "Your total percentage was " + calculatedPercentage + "%. ";
+                // System.out.println(finish1);
+            }
+        System.out.print("Did you want to start a new Session or Quit (S/Q)? ");
+        String response = scan.next().toUpperCase();
+    
+        if (response.equals("Q")) {
+            quit = true;
+        } else if (response.equals("S")) {
+            // Restart the program from the beginning
+            letsPlay();
+        } else {
+            System.out.println("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
+        }
+        ////double overallPercentage = (double) correctCount / totalQuestions * 100;
+
+
+        // quiz.setCalculatedPercentage(correctCount, totalQuestions);
+        // calculatedPercentage = quiz.getCalculatedPercentage();
+
+
+        ////(double) correctCount / (quiz.getQuestions().indexOf(questions) + 1) * 100;
+
+
+        // System.out.printf("Your current percentage is %.2f%%%n", calculatedPercentage);
+        // if((totalQuestions==0)){
+            
+        //     return;
+        // }
+        // String finish1 = "Your total percentage was " + calculatedPercentage + "%. ";
+        // System.out.println(finish1);
+
+
+
+        // String finish2 = "Well done! That was a good effort, but you may need to work on some expressions.";
+        // System.out.println(finish2);
+        // System.out.print("Did you want to start a new Session or Quit (S/Q)?");
+        // choice = scan.next();
+        // if (choice.equalsIgnoreCase("Q")) {
+        //     //break;
+        //     return;
+        // }
+        // while (!choice.equalsIgnoreCase("S")) {
+        //     System.out.print("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
+        //     choice = scan.next();
+        //     if (choice.equalsIgnoreCase("Q")) {
+        //         return;
+        //         //return;
+        //     }
+        // }
+        // letsPlay();
+
+        }            
 
     }
 
@@ -371,7 +435,7 @@ public class MathsHelper {
         try {
 
             int c = Integer.parseInt(choice);
-            return c >= 0 && c <= 9;
+            return c >= 0 && c <= 7;
 
         } catch (NumberFormatException e) {
             return false;
@@ -416,5 +480,28 @@ public class MathsHelper {
 
     public void setnumQuestions(int numQuestions) {
         this.numQuestions = numQuestions;
+    }
+
+    public QuestionGenerator getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(QuestionGenerator quiz) {
+        this.quiz = quiz;
+    }
+    public String getMessageForPercentage(double percentage) {
+        if (percentage < 40) {
+            return "Bad luck. Try practicing with some lower year levels to build your confidence and skills.";
+        } else if (percentage < 50) {
+            return "That was a good effort, but you may need to work on some expressions.";
+        } else if (percentage < 60) {
+            return "Congratulations you passed. Keep practicing at this year level to improve your score.";
+        } else if (percentage < 75) {
+            return "Well done. That was a good effort.";
+        } else if (percentage < 85) {
+            return "Good job. You should try the next year level in your next test.";
+        } else {
+            return "Excellent work! You really know your stuff. Try the harder levels next time.";
+        }
     }
 }

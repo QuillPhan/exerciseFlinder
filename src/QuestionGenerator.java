@@ -1,10 +1,15 @@
 import java.util.ArrayList;
+import java.util.List;
 public class QuestionGenerator {
     
     private int min;
     private int max;
     private char[] operations;
     private ArrayList<Question> questions;
+    private List<String> correctAnswers = new ArrayList<>();
+    private List<String> wrongAnswers = new ArrayList<>();
+    private double calculatedPercentage;
+    private int totalQuestions;
 
     public QuestionGenerator(int yearLevel) {
         min = findMin(yearLevel);
@@ -36,6 +41,14 @@ public class QuestionGenerator {
 
     public void setOperations(char[] operations) {
         this.operations = operations;
+    }
+
+    public void setCalculatedPercentage(int correctCount, int totalQuestions) {
+        this.calculatedPercentage =  (double) correctCount / totalQuestions * 100;
+    }    
+
+    public double getCalculatedPercentage() {
+        return calculatedPercentage;
     }
 
     public static int findMin(int year) {
@@ -110,6 +123,8 @@ public class QuestionGenerator {
         //Random random = new Random();
         for (int i = 0; i < num; i++) {
             questions.add(new Question(min, max, operations));
+            //answers[i] = questions.get(i).getAnswer();
+            correctAnswers.add(questions.get(i).getAnswer());
         }
     }
     // public void generateQuestions(){
