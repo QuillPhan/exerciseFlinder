@@ -68,23 +68,29 @@ public class MathsHelper {
                 // System.out.println(quiz2.getMin());
                 // System.out.println(quiz2.getMax());
                 // System.out.println(quiz2.getOperations());
-
                 quiz = new QuestionGenerator(yearLevel);
-                // quiz.generateQuestions(getQuestions(numQuestions));
-                // ArrayList<Question> questions = quiz.getQuestions();
-                // for (Question question : questions) {
-                //     System.out.println(question.getQuestion());
-                // }
+                    // quiz.generateQuestions(getQuestions(numQuestions));
+                    // ArrayList<Question> questions = quiz.getQuestions();
+                    // for (Question question : questions) {
+                    //     System.out.println(question.getQuestion());
+                    // }
                 askQuestion(quiz);
+                //continue;
                 break;
+                // if (choice.equalsIgnoreCase("Q")) {
+                //     break;
+                // }
             }else {
 
                 //choice = scan.next();
 
                 continue;
             }
-
+            //System.out.println("Let's begin ...! (press 'Q' at any time to quit)");
+            
+            
         }
+        
 
 
     }
@@ -151,7 +157,10 @@ public class MathsHelper {
         System.out.print("You are a " + yearLevel + " student and want to do " + numQuestions + " questions. Is this correct (Y/N)?: ");
 
         String choice = scan.next();
-        if (choice.equalsIgnoreCase("N")) {
+        // if (choice.equalsIgnoreCase("Q")) {
+        //     break;
+        // }
+        if (choice.equalsIgnoreCase("N") || choice.equalsIgnoreCase("Q")) {
             return false;
         }
 
@@ -256,19 +265,62 @@ public class MathsHelper {
         int countQuestion = 1;
         int correctCount = 0;
         int totalQuestions = 0;
+        
+        int hintCounter = 0;
         quiz.generateQuestions(getQuestions(numQuestions));
         ArrayList<Question> questions = quiz.getQuestions();
         for (int i = 0; i < getQuestions(numQuestions); i++) {
 
                 System.out.println(questions.get(i).getQuestion());
                 System.out.print("Your answer: ");
+                //System.out.print(questions.get(i).getAnswer());
+                
                 String input = scan.next();
                 if (input.equalsIgnoreCase("Q")) {
                     break;
                 }
-                int actualAnswer = Integer.parseInt(input);
+                while (input.equalsIgnoreCase("H") || input.equalsIgnoreCase("?")) {
+                    // Display hint
+                    //char[] hint;
+                    //hintCounter = 0;
+                    char[] hintArray = questions.get(i).getAnswer().toCharArray();
+                    char[] hint = new char[hintArray.length];
+                    for (int j = 0; j < hintArray.length - hintCounter; j++) {
+                        hint[j] = '_';
+                    }
+                    hintCounter++;
+                    for (int j = hintArray.length - 1 ; j >= hintArray.length - hintCounter; j--) {
+                        hint[j] = hintArray[j];
+                    }
+                    String hintString = new String(hint); // Convert char[] to String
+                    System.out.println(questions.get(i).getQuestion() + " " + hintString);
+                    
+                    System.out.print("Your answer: ");
+                    input = scan.next();
+                    if(hintCounter == hintArray.length - 1){
+                        // System.out.println("Bad luck, that was incorrect. The correct answer was " + questions.get(i).getAnswer() + ".");
+                        // totalQuestions++;
+                        // double percentage = (double) correctCount / totalQuestions * 100;
+                        // System.out.println("Your current percentage is " + percentage + "%.");
+                        break;
+                    }
+                    if (input.equalsIgnoreCase("Q")) {
+                        return;
+                    }
+                    // if (!(input.equalsIgnoreCase("H") || input.equalsIgnoreCase("?"))) {
+                    //     continue;
+                    // }
+                }
+                
 
-                if (actualAnswer == Integer.valueOf(questions.get(i).getAnswer())) {
+                String actualAnswer = input;
+                hintCounter = 0;
+
+                // if(hintCounter == questions.get(i).getAnswer().length()){
+                //     break;
+                // }
+
+                if (actualAnswer.equals(questions.get(i).getAnswer()) ){
                     System.out.println("Correct! Well done!");
                     correctCount++;
                 } else {
@@ -284,6 +336,21 @@ public class MathsHelper {
                     countQuestion=0;
                 }
                 countQuestion++;
+
+                System.out.print("Did you want to start a new Session or Quit (S/Q)?");
+                choice = scan.next();
+                if (choice.equalsIgnoreCase("Q")) {
+                    //break;
+                    return;
+                }
+                while (!choice.equalsIgnoreCase("S")) {
+                    System.out.print("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
+                    choice = scan.next();
+                    if (choice.equalsIgnoreCase("Q")) {
+                        break;
+                        //return;
+                    }
+                }
         }
         double overallPercentage = (double) correctCount / totalQuestions * 100;
         if((totalQuestions==0)){
@@ -295,20 +362,7 @@ public class MathsHelper {
 
         String finish2 = "Well done! That was a good effort, but you may need to work on some expressions.";
         System.out.println(finish2);
-        System.out.print("Did you want to start a new Session or Quit (S/Q)?");
-            choice = scan.next();
-            if (choice.equalsIgnoreCase("Q")) {
-                //break;
-                return;
-            }
-            while (!choice.equalsIgnoreCase("S")) {
-                System.out.print("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
-                choice = scan.next();
-                if (choice.equalsIgnoreCase("Q")) {
-                    break;
-                    //return;
-                }
-            }
+       
 
 
     }

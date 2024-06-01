@@ -18,7 +18,7 @@ public class Question {
             }
         }
 
-        question = value1 + " " + operation + " " + value2 + " = " + "?";
+        question = value1 + " " + operation + " " + value2 + " = " ;
         //System.out.println(question);
         switch (operation) {
             case '+':
