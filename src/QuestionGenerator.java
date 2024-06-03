@@ -1,23 +1,13 @@
 import java.util.ArrayList;
-import java.util.List;
 public class QuestionGenerator {
     
+    private int yearLevel;
+    private int numQuestions;
+    private double calculatedPercentage;
     private int min;
     private int max;
     private char[] operations;
     private ArrayList<Question> questions;
-    private List<String> correctAnswers = new ArrayList<>();
-    private List<String> wrongAnswers = new ArrayList<>();
-    private double calculatedPercentage;
-    private int totalQuestions;
-
-    public QuestionGenerator(int yearLevel) {
-        min = findMin(yearLevel);
-        max = findMax(yearLevel);
-        operations = findOperations(yearLevel);
-        questions = new ArrayList<>();
-        
-    }
 
     public int getMin() {
         return min;
@@ -41,6 +31,14 @@ public class QuestionGenerator {
 
     public void setOperations(char[] operations) {
         this.operations = operations;
+    }
+
+    public ArrayList<Question> getQuestions() {
+        return questions;
+    }
+
+    public void setQuestions(ArrayList<Question> questions) {
+        this.questions = questions;
     }
 
     public void setCalculatedPercentage(int correctCount, int totalQuestions) {
@@ -111,23 +109,41 @@ public class QuestionGenerator {
         }
     }
 
-    public ArrayList<Question> getQuestions() {
-        return questions;
-    }
-
-    public void setQuestions(ArrayList<Question> questions) {
-        this.questions = questions;
+    public QuestionGenerator(int year) {
+        this.min = findMin(year);
+        this.max = findMax(year);
+        this.operations = findOperations(year);
+        this.questions = new ArrayList<>();
     }
 
     public void generateQuestions(int num) {
-        //Random random = new Random();
         for (int i = 0; i < num; i++) {
-            questions.add(new Question(min, max, operations));
-            //answers[i] = questions.get(i).getAnswer();
-            correctAnswers.add(questions.get(i).getAnswer());
+            this.questions.add(new Question(min, max, operations));
         }
     }
-    // public void generateQuestions(){
 
-    // }
+    public QuestionGenerator(int yearLevel, int numQuestions) {
+        this.yearLevel = yearLevel;
+        this.numQuestions = numQuestions;
+        operations = findOperations(yearLevel);
+        questions = new ArrayList<>();
+    }
+
+    public QuestionGenerator(int min, int max, char[] operations) {
+        this.min = min;
+        this.max = max;
+        this.operations = operations;
+    }
+
+    public void generateQuestions() {
+        int min = findMin(yearLevel);
+        int max = findMax(yearLevel);
+        char[] operations = findOperations(yearLevel);
+
+        for (int i = 0; i < numQuestions; i++) {
+            questions.add(new Question(min, max, operations));
+        }
+    }
+
+
 }

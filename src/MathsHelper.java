@@ -1,4 +1,4 @@
-import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 
@@ -13,95 +13,162 @@ import java.util.Scanner;
 public class MathsHelper {
 
     // IMPORTANT! This Scanner variable must remain public and non-final for code testing purposes
-    public Scanner scan;
-    private YearLevelType yearLevelType;
-    // private QuestionType questionType;
-    private RangeLevel rangeLevel;
+    public Scanner scan;   
+    
     public QuestionGenerator quiz;
     public int yearLevel;
     public int numQuestions;
-    public int input;
+    //public int input;
     public String choice;
-
-    public MathsHelper() {
-        scan = new Scanner(System.in);
-    }
-    /**
-     * Performs one session of the Maths quiz
-     */
-    public void letsPlay() {
-        //Student student = new Student();
-
+public MathsHelper() {
+    scan = new Scanner(System.in);
+}
+/**
+ * Performs one session of the Maths quiz
+ */
+	public void letsPlay() {
         displayWelcome();
-        boolean quit = false;
-        while (!quit) {
+        while (true) {
             displayYearMenu();
-            choice = scan.next();
-            while (!isYearLevel(choice)) {
-                System.out.println("That's not a valid number. Please enter valid number (0 - 7)");
-                choice = scan.next();
+            while (true) {
+                try {
+                    yearLevel = scan.nextInt();
+                    if (yearLevel < 0 || yearLevel > 7) {
+                        System.out.println("Invalid year level. Please try again.");
+                        continue;
+                    }
+                    break;
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a valid year level.");
+                    scan.next();
+                }
             }
-            setYearLevel(Integer.parseInt(choice));
+            setYearLevel(yearLevel);
+
             displayQuestionMenu();
-            choice = scan.next();
-            while (!isQuestion(choice)) {
-                System.out.println("That's not a valid number. Please enter valid number (1 - 5)");
-                choice = scan.next();
+            while (true) {
+                try {
+                    numQuestions = scan.nextInt();
+                    if (numQuestions < 0 || numQuestions > 5) {
+                        System.out.println("Invalid number of questions. Please try again.");
+                        continue;
+                    }
+                    break;
+                } catch (InputMismatchException e) {
+                    System.out.println("Invalid input. Please enter a valid number of questions.");
+                    scan.next();
+                }
             }
-            setnumQuestions(Integer.parseInt(choice));
 
-
-            if (confirmSessionDetails(yearLevel, numQuestions)) {
-                //student.setSessionDetails(yearLevel, numQuestions);
-                //Student student = new Student(YearLevelType.getYearLevelType(yearLevel), numQuestions);
-                //MathsHelper.numQuestions = getQuestions(numQuestions);
+            setNumQuestions(numQuestions);
+            if (confirmSessionDetails(getYearLevel(), getNumQuestions())) {
+                quiz = new QuestionGenerator(yearLevel);
+                quiz.generateQuestions(numQuestions);
                 System.out.println("Let's begin ...! (press 'Q' at any time to quit)");
-                // System.out.println(QuestionGenerator.findMin(3));
-                // System.out.println(QuestionGenerator.findMax(5));
-                // System.out.println(QuestionGenerator.findOperations(6));
-
-                // QuestionGenerator quiz1 = new QuestionGenerator(3);
-                // QuestionGenerator quiz2 = new QuestionGenerator(7);
-                // System.out.println(quiz1.getMin());
-                // System.out.println(quiz1.getMax());
-                // System.out.println(quiz1.getOperations());
-                // System.out.println(quiz2.getMin());
-                // System.out.println(quiz2.getMax());
-                // System.out.println(quiz2.getOperations());
+                askQuestions();
                 
-                //continue;
-                break;
-                // if (choice.equalsIgnoreCase("Q")) {
-                //     break;
-                // }
-            }else {
-
-                //choice = scan.next();
-
+                // Prompt for new session or quit
+                while (true) {
+                    System.out.println("Did you want to start a new Session or Quit (S/Q)?");
+                    String userChoice = scan.next();
+                    if (userChoice.equalsIgnoreCase("Q")) {
+                        return;
+                    } else if (userChoice.equalsIgnoreCase("S")) {
+                        letsPlay();
+                        return;
+                    } else {
+                        System.out.println("Sorry that input was not valid.");
+                    }
+                }
+            } else {
                 continue;
             }
-            //System.out.println("Let's begin ...! (press 'Q' at any time to quit)");
-            
-            
         }
-        //QuestionGenerator questionGenerator = new QuestionGenerator();
-        // setQuiz(questionGenerator);
-        // QuestionGenerator quiz = getQuiz();
-
-        quiz = new QuestionGenerator(yearLevel);
-        quiz.generateQuestions(getQuestions(numQuestions));
-        askQuestion();
-                    // quiz.generateQuestions(getQuestions(numQuestions));
-                    // ArrayList<Question> questions = quiz.getQuestions();
-                    // for (Question question : questions) {
-                    //     System.out.println(question.getQuestion());
-                    // }
-                    
-
-                
     }
 
-    //-------------------------operational methods------------------------------
+    public void askQuestions() {
+        int correctAnswers = 0;
+        int totalQuestions = quiz.getQuestions().size();
+
+        for (int i = 0; i < totalQuestions; i++) {
+            Question currentQuestion = quiz.getQuestions().get(i);
+            String hintAnswer = generateHint(currentQuestion.getAnswer(), 0);
+            int hintCount = 0;
+
+            while (true) {
+                System.out.print(currentQuestion.getQuestion());
+                if (hintCount > 0) {
+                    System.out.print(hintAnswer + ": ");
+                }
+                String userAnswer = scan.next();
+
+                if (userAnswer.equalsIgnoreCase("Q")) {
+                    return;
+                }
+
+                if (userAnswer.equalsIgnoreCase("H")) {
+                    hintCount++;
+                    hintAnswer = generateHint(currentQuestion.getAnswer(), hintCount);
+                    if (hintCount >= currentQuestion.getAnswer().length()) {
+                        System.out.println("Bad luck that was incorrect. The correct answer was " + currentQuestion.getAnswer() + ".");
+	                        break;
+	                    }
+	                    continue;
+	                }
+	
+	                if (userAnswer.equals(currentQuestion.getAnswer())) {
+	                    correctAnswers++;
+	                    System.out.println("Correct! Well Done!");
+	                    break;
+	                } else {
+	                    System.out.println("Bad luck that was incorrect. The correct answer was " + currentQuestion.getAnswer() + ".");
+	                    break;
+	                }
+	            }
+	
+	            double percentage = ((double) correctAnswers / (i + 1)) * 100;
+	            System.out.printf("Your current percentage is %.2f%%\n", percentage);
+	
+	            // Suggest difficulty change after each block of 5 questions
+	            if ((i + 1) % 5 == 0) {
+	                if (percentage > 75 && yearLevel < 7) {
+	                    System.out.println("You are doing really well! Maybe try a harder difficulty.");
+	                } else if (percentage < 30 && yearLevel > 0) {
+	                    System.out.println("It seems you are having some trouble. Maybe try an easier difficulty.");
+	                }
+	            }
+	        }
+	
+	        double totalPercentage = ((double) correctAnswers / totalQuestions) * 100;
+	        System.out.printf("Your total percentage was %.2f%%\n", totalPercentage);
+	
+	        if (totalPercentage < 40) {
+	            System.out.println("Bad luck. Try practicing with some lower year levels to build your confidence and skills.");
+	        } else if (totalPercentage < 50) {
+	            System.out.println("That was a good effort, but you may need to work on some expressions.");
+	        } else if (totalPercentage < 60) {
+	            System.out.println("Congratulations you passed. Keep practicing at this year level to improve your score.");
+	        } else if (totalPercentage < 75) {
+	            System.out.println("Well done. That was a good effort.");
+	        } else if (totalPercentage < 85) {
+	            System.out.println("Good job. You should try the next year level in your next test.");
+	        } else {
+	            System.out.println("Excellent work! You really know your stuff. Try the harder levels next time.");
+	        }
+	    }
+	
+	    private String generateHint(String answer, int hintCount) {
+	        StringBuilder hint = new StringBuilder();
+	        for (int i = 0; i < answer.length(); i++) {
+	            if (i < answer.length() - hintCount) {
+	                hint.append("_");
+	            } else {
+	                hint.append(answer.charAt(i));
+	            }
+	        }
+	        return hint.toString();
+	    }
+//-------------------------operational methods------------------------------
 
     /**
      * Defines the Welcome Message text
@@ -157,7 +224,7 @@ public class MathsHelper {
      */
     public boolean confirmSessionDetails(int year, int questions) {
         String yearLevel = (year == 0) ? "Reception" : "Year " + year;
-        int numQuestions = getQuestions(questions);
+        int numQuestions = getNumberQuestions(questions);
 
 
         System.out.print("You are a " + yearLevel + " student and want to do " + numQuestions + " questions. Is this correct (Y/N)?: ");
@@ -203,233 +270,18 @@ public class MathsHelper {
             }
         }
     }
-    public static int getQuestions(int numQuestions) {
+    public static int getNumberQuestions(int numQuestions) {
         switch(numQuestions) {
             case 1: return 10;
             case 2: return 20;
             case 3: return 30;
             case 4: return 40;
             case 5: return 50;
-            default: throw new IllegalArgumentException("Invalid Question: " + numQuestions);
-        }
-    }
-    class RangeLevel implements YearLevel {
-        private int min;
-        private int max;
-        private YearLevelType type;
-
-        public RangeLevel(int min, int max) {
-            this.min = min;
-            this.max = max;
-        }
-
-        public RangeLevel(int min, int max, YearLevelType type) {
-            this.min = min;
-            this.max = max;
-            this.type = type;
-        }
-
-        public boolean contains(int value) {
-            return value >= min && value <= max;
-        }
-
-        @Override
-        public YearLevelType getYearLevelType(int yearLevel) {
-            return this.type = getYearLevelType(yearLevel);
-        }
-    }
-
-    public static class Student implements YearLevel {
-        private YearLevelType yearLevel;
-        private RangeLevel rangeLevel;
-        private int numQuestions;
-
-        public Student(YearLevelType yearLevel, int numQuestions) {
-            this.yearLevel = yearLevel;
-            this.numQuestions = numQuestions;
-        }
-
-        @Override
-        public YearLevelType getYearLevelType(int year) {
-            return yearLevel = getYearLevelType(year);
-        }
-
-        public boolean confirmSessionDetails(int year, int questions) {
-            // TO DO: implement confirmation logic
-            return true;
-        }
-        public void setSessionDetails(int year, int questions) {
-            // TO DO: implement confirmation logic
-            this.yearLevel = getYearLevelType(year);
-            this.numQuestions = getQuestions(questions);
+            default: return 10;
         }
     }
 
 
-    public void askQuestion() {
-
-        int countQuestion = 1;
-        int correctCount = 0;
-        int totalQuestions = 0;
-        int hintCounter = 0;
-        //quiz.generateQuestions(getQuestions(numQuestions));
-        ArrayList<Question> questions = quiz.getQuestions();
-        boolean quit = false;
-        String correctAnswer ;
-        
-        double calculatedPercentage ;
-        double totalPercentage;
-        while (!quit) {
-            for (int i = 0; i < getQuestions(numQuestions); i++) {
-
-                System.out.println(questions.get(i).getQuestion());
-                System.out.print("Your answer: ");
-                //System.out.print(questions.get(i).getAnswer());
-                
-                String input = scan.next();
-                if (input.equalsIgnoreCase("Q")) {
-                    break;
-                }
-                while (input.equalsIgnoreCase("H") || input.equalsIgnoreCase("?")) {
-                    // Display hint
-                    //char[] hint;
-                    //hintCounter = 0;
-                    char[] hintArray = questions.get(i).getAnswer().toCharArray();
-                    char[] hint = new char[hintArray.length];
-                    for (int j = 0; j < hintArray.length - hintCounter; j++) {
-                        hint[j] = '_';
-                    }
-                    hintCounter++;
-                    for (int j = hintArray.length - 1 ; j >= hintArray.length - hintCounter; j--) {
-                        hint[j] = hintArray[j];
-                    }
-                    String hintString = new String(hint); // Convert char[] to String
-                    System.out.println(questions.get(i).getQuestion() + " " + hintString +" : ");
-                    
-                    input = scan.next();
-
-                    if(hintCounter == hintArray.length - 1){
-                        // System.out.println("Bad luck, that was incorrect. The correct answer was " + questions.get(i).getAnswer() + ".");
-                        // totalQuestions++;
-                        // double percentage = (double) correctCount / totalQuestions * 100;
-                        // System.out.println("Your current percentage is " + percentage + "%.");
-                        break;
-                    }
-                    if (input.equalsIgnoreCase("Q")) {
-                        return;
-                    }
-                    // if (!(input.equalsIgnoreCase("H") || input.equalsIgnoreCase("?"))) {
-                    //     continue;
-                    // }
-                }
-                
-
-                String actualAnswer = input;
-                hintCounter = 0;
-
-                // if(hintCounter == questions.get(i).getAnswer().length()){
-                //     break;
-                // }
-
-                if (actualAnswer.equals(questions.get(i).getAnswer()) ){
-                    System.out.println("Correct! Well done!");
-                    correctCount++;
-                } else {
-                    System.out.println("Bad luck, that was incorrect. The correct answer was " + questions.get(i).getAnswer() + ".");
-                }
-                totalQuestions++;
-
-                quiz.setCalculatedPercentage(correctCount, totalQuestions);
-                calculatedPercentage = quiz.getCalculatedPercentage();
-                System.out.println("Your current percentage is " + calculatedPercentage  + "%.");
-
-                if(countQuestion / 5 == 1){
-                    System.out.println("You are doing really well! Maybe try a harder difficulty.");
-                    countQuestion=0;
-                }
-                countQuestion++;
-
-                //quiz.setCalculatedPercentage(correctCount, totalQuestions);
-                //calculatedPercentage = quiz.getCalculatedPercentage();
-
-                totalPercentage = (double) correctCount / quiz.getQuestions().size() * 100;
-                System.out.printf("Your total percentage was %.2f%%%n", totalPercentage);
-                System.out.println(getMessageForPercentage(totalPercentage));
-
-                // if (totalPercentage < 40) {
-                //     System.out.println("Bad luck. Try practicing with some lower year levels to build your confidence and skills.");
-                // } else if (totalPercentage >= 40 && totalPercentage < 50) {
-                //     System.out.println("That was a good effort, but you may need to work on some expressions.");
-                // } else if (totalPercentage >= 50 && totalPercentage < 60) {
-                //     System.out.println("Congratulations you passed. Keep practicing at this year level to improve your score.");
-                // } else if (totalPercentage >= 60 && totalPercentage < 75) {
-                //     System.out.println("Well done. That was a good effort.");
-                // } else if (totalPercentage >= 75 && totalPercentage < 85) {
-                //     System.out.println("Good job. You should try the next year level in your next test.");
-                // } else if (totalPercentage >= 85) {
-                //     System.out.println("Excellent work! You really know your stuff. Try the harder levels next time.");
-                // }
-
-                // System.out.printf("Your current percentage is %.2f%%%n", calculatedPercentage);
-                // if((totalQuestions==0)){
-                    
-                //     return;
-                // }
-                // String finish1 = "Your total percentage was " + calculatedPercentage + "%. ";
-                // System.out.println(finish1);
-            }
-        System.out.print("Did you want to start a new Session or Quit (S/Q)? ");
-        String response = scan.next().toUpperCase();
-    
-        if (response.equals("Q")) {
-            quit = true;
-        } else if (response.equals("S")) {
-            // Restart the program from the beginning
-            letsPlay();
-        } else {
-            System.out.println("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
-        }
-        ////double overallPercentage = (double) correctCount / totalQuestions * 100;
-
-
-        // quiz.setCalculatedPercentage(correctCount, totalQuestions);
-        // calculatedPercentage = quiz.getCalculatedPercentage();
-
-
-        ////(double) correctCount / (quiz.getQuestions().indexOf(questions) + 1) * 100;
-
-
-        // System.out.printf("Your current percentage is %.2f%%%n", calculatedPercentage);
-        // if((totalQuestions==0)){
-            
-        //     return;
-        // }
-        // String finish1 = "Your total percentage was " + calculatedPercentage + "%. ";
-        // System.out.println(finish1);
-
-
-
-        // String finish2 = "Well done! That was a good effort, but you may need to work on some expressions.";
-        // System.out.println(finish2);
-        // System.out.print("Did you want to start a new Session or Quit (S/Q)?");
-        // choice = scan.next();
-        // if (choice.equalsIgnoreCase("Q")) {
-        //     //break;
-        //     return;
-        // }
-        // while (!choice.equalsIgnoreCase("S")) {
-        //     System.out.print("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
-        //     choice = scan.next();
-        //     if (choice.equalsIgnoreCase("Q")) {
-        //         return;
-        //         //return;
-        //     }
-        // }
-        // letsPlay();
-
-        }            
-
-    }
 
     public boolean isYearLevel(String choice) {
         try {
@@ -449,23 +301,6 @@ public class MathsHelper {
             return false;
         }
     }
-
-    private static int calculateAnswer(int num1, int num2, String operator) {
-        switch (operator) {
-            case "+":
-                return num1 + num2;
-            case "-":
-                return num1 - num2;
-            case "*":
-                return num1 * num2;
-            case "/":
-                return num1 / num2;
-            case "%":
-                return num1 % num2;
-            default:
-                throw new IllegalArgumentException("Invalid operator: " + operator);
-        }
-    }
     public int getYearLevel() {
         return yearLevel;
     }
@@ -474,11 +309,11 @@ public class MathsHelper {
         this.yearLevel = yearLevel;
     }
 
-    public int getnumQuestions() {
+    public int getNumQuestions() {
         return numQuestions;
     }
 
-    public void setnumQuestions(int numQuestions) {
+    public void setNumQuestions(int numQuestions) {
         this.numQuestions = numQuestions;
     }
 
