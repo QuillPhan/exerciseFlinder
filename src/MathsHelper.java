@@ -1,6 +1,8 @@
 import java.util.InputMismatchException;
 import java.util.Scanner;
-
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.lang.Math;
 
 /**
  * An application to help young children practice their mathematics.  The application
@@ -64,7 +66,7 @@ public MathsHelper() {
             if (confirmSessionDetails(getYearLevel(), getNumQuestions())) {
                 quiz = new QuestionGenerator(yearLevel);
                 quiz.generateQuestions(numQuestions);
-                System.out.println("Let's begin ...! (press 'Q' at any time to quit)");
+                System.out.println("Let's begin ... (press 'Q' at any time to quit)");
                 askQuestions();
                 
                 // Prompt for new session or quit
@@ -89,6 +91,7 @@ public MathsHelper() {
     public void askQuestions() {
         int correctAnswers = 0;
         int totalQuestions = quiz.getQuestions().size();
+        DecimalFormat df = new DecimalFormat("#.##");
 
         for (int i = 0; i < totalQuestions; i++) {
             Question currentQuestion = quiz.getQuestions().get(i);
@@ -127,7 +130,8 @@ public MathsHelper() {
 	            }
 	
 	            double percentage = ((double) correctAnswers / (i + 1)) * 100;
-	            System.out.printf("Your current percentage is %.2f%%\n", percentage);
+                //long roundedPercentage = Math.round(percentage);
+	            System.out.println("Your current percentage is " + df.format(percentage) + "%");
 	
 	            // Suggest difficulty change after each block of 5 questions
 	            if ((i + 1) % 5 == 0) {
@@ -140,7 +144,7 @@ public MathsHelper() {
 	        }
 	
 	        double totalPercentage = ((double) correctAnswers / totalQuestions) * 100;
-	        System.out.printf("Your total percentage was %.2f%%\n", totalPercentage);
+	        System.out.println("Your total percentage was " +  df.format(totalPercentage) + "%");
 	
 	        if (totalPercentage < 40) {
 	            System.out.println("Bad luck. Try practicing with some lower year levels to build your confidence and skills.");
