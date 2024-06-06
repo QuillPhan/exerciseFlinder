@@ -53,7 +53,7 @@ public void letsPlay() {
                     return;
                 } else if (userResponse.equalsIgnoreCase("S")) {
                     System.out.println("Starting a new session...");
-                    askQuestions();
+                    letsPlay();
                     return;  // Start from the beginning
                 } else {
                     System.out.println("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
