@@ -43,7 +43,7 @@ public void letsPlay() {
         if (confirmSessionDetails(getYearLevel(), getNumQuestions())) {
             quiz = new QuestionGenerator(yearLevel);
             quiz.generateQuestions(numQuestions * 10);
-            System.out.println("Let's begin ...! (press 'Q' at any time to quit)");
+            System.out.println("Let's begin ... (press 'Q' at any time to quit)");
             try {
             askQuestions();
             while (true) {
