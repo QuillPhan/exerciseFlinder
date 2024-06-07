@@ -1,8 +1,8 @@
-import java.util.InputMismatchException;
-import java.util.Scanner;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.lang.Math;
+import java.util.InputMismatchException;
+//import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 /**
  * An application to help young children practice their mathematics.  The application
@@ -20,158 +20,177 @@ public class MathsHelper {
     public QuestionGenerator quiz;
     public int yearLevel;
     public int numQuestions;
-    //public int input;
-    public String choice;
+
 public MathsHelper() {
     scan = new Scanner(System.in);
 }
 /**
  * Performs one session of the Maths quiz
  */
-	public void letsPlay() {
-        displayWelcome();
+public void letsPlay() {
+    displayWelcome();
+    while (true) {
+        displayYearMenu();
+        yearLevel = getValidYearLevel();
+        setYearLevel(yearLevel);
+
+        displayQuestionMenu();
+        numQuestions = getValidNumQuestions();
+       
+        setNumQuestions(numQuestions);
+
+        if (confirmSessionDetails(getYearLevel(), getNumQuestions())) {
+            quiz = new QuestionGenerator(yearLevel);
+            quiz.generateQuestions(numQuestions * 10);
+            System.out.println("Let's begin ... (press 'Q' at any time to quit)");
+
+            askQuestions();
+            while (true) {
+                System.out.println("Did you want to start a new Session or Quit (S/Q)?");
+                if(!scan.hasNext()){
+                    System.out.println("Invalid input.");
+                    break;
+                }
+                String userResponse = scan.next();
+                if (userResponse.equalsIgnoreCase("Q")) {
+                    return;
+                } else if (userResponse.equalsIgnoreCase("S")) {
+                    scan.nextLine();
+                    letsPlay(); // Start from the beginning
+                    return;
+                } else {
+                    System.out.println("Sorry that input was not valid. Did you want to start a new Session or Quit (S/Q)?");
+                }
+            }
+
+            
+
+        } else {
+            continue;
+        }
+    }
+}
+
+public void askQuestions() {
+    int correctAnswers = 0;
+    int totalQuestions = quiz.getQuestions().size();
+    DecimalFormat df = new DecimalFormat("#.##");
+    ArrayList<Question> questions = quiz.getQuestions();
+
+    for (int i = 0; i < totalQuestions; i++) {
+        String correctAnswer = questions.get(i).getAnswer();
+        String hintAnswer = generateHint(correctAnswer, 0);
+        int hintCount = 0;
+
         while (true) {
-            displayYearMenu();
-            while (true) {
-                try {
-                    yearLevel = scan.nextInt();
-                    if (yearLevel < 0 || yearLevel > 7) {
-                        System.out.println("Invalid year level. Please try again.");
-                        continue;
-                    }
-                    break;
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid input. Please enter a valid year level.");
-                    scan.next();
-                }
+            System.out.print(questions.get(i).getQuestion());
+            if (hintCount > 0) {
+                System.out.print(hintAnswer + ": ");
             }
-            setYearLevel(yearLevel);
+            String userAnswer = scan.next();
 
-            displayQuestionMenu();
-            while (true) {
-                try {
-                    numQuestions = scan.nextInt();
-                    if (numQuestions < 0 || numQuestions > 5) {
-                        System.out.println("Invalid number of questions. Please try again.");
-                        continue;
-                    }
-                    break;
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid input. Please enter a valid number of questions.");
-                    scan.next();
-                }
+            if (userAnswer.equalsIgnoreCase("Q")) {
+                return;
             }
 
-            setNumQuestions(numQuestions);
-            if (confirmSessionDetails(getYearLevel(), getNumQuestions())) {
-                quiz = new QuestionGenerator(yearLevel);
-                quiz.generateQuestions(numQuestions);
-                System.out.println("Let's begin ... (press 'Q' at any time to quit)");
-                askQuestions();
-                
-                // Prompt for new session or quit
-                while (true) {
-                    System.out.println("Did you want to start a new Session or Quit (S/Q)?");
-                    String userChoice = scan.next();
-                    if (userChoice.equalsIgnoreCase("Q")) {
-                        return;
-                    } else if (userChoice.equalsIgnoreCase("S")) {
-                        letsPlay();
-                        return;
-                    } else {
-                        System.out.println("Sorry that input was not valid.");
-                    }
+            if (userAnswer.equalsIgnoreCase("H") || userAnswer.equalsIgnoreCase("?")) {
+                hintCount++;
+                hintAnswer = generateHint(correctAnswer, hintCount);
+                if (hintCount >= correctAnswer.length()) {
+                    System.out.println("Bad luck that was incorrect. The correct answer was " + correctAnswer + ".");
+                    break;
                 }
-            } else {
                 continue;
+            }
+
+            if (userAnswer.equals(correctAnswer)) {
+                correctAnswers++;
+                System.out.println("Correct! Well Done!");
+                break;
+            } else {
+                System.out.println("Bad luck that was incorrect. The correct answer was " + correctAnswer + ".");
+                break;
+            }
+        }
+
+        double percentage = ((double) correctAnswers / (i + 1)) * 100;
+        System.out.println("Your current percentage is " + df.format(percentage) + "%");
+
+        if ((i + 1) % 5 == 0) {
+            if (percentage > 75 && yearLevel < 7) {
+                System.out.println("You are doing really well! Maybe try a harder difficulty.");
+            } else if (percentage < 30 && yearLevel > 0) {
+                System.out.println("It seems you are having some trouble. Maybe try an easier difficulty.");
             }
         }
     }
 
-    public void askQuestions() {
-        int correctAnswers = 0;
-        int totalQuestions = quiz.getQuestions().size();
-        DecimalFormat df = new DecimalFormat("#.##");
+    double totalPercentage = ((double) correctAnswers / totalQuestions) * 100;
+    System.out.println("Your total percentage was " + df.format(totalPercentage) + "%");
+    System.out.println(getMessageForTotalPercentage(totalPercentage));
+}
 
-        for (int i = 0; i < totalQuestions; i++) {
-            Question currentQuestion = quiz.getQuestions().get(i);
-            String hintAnswer = generateHint(currentQuestion.getAnswer(), 0);
-            int hintCount = 0;
+private String generateHint(String answer, int hintCount) {
+    StringBuilder hint = new StringBuilder();
+    for (int i = 0; i < answer.length(); i++) {
+        if (i < answer.length() - hintCount) {
+            hint.append("_");
+        } else {
+            hint.append(answer.charAt(i));
+        }
+    }
+    return hint.toString();
+}
 
-            while (true) {
-                System.out.print(currentQuestion.getQuestion());
-                if (hintCount > 0) {
-                    System.out.print(hintAnswer + ": ");
-                }
-                String userAnswer = scan.next();
+private String getMessageForTotalPercentage(double totalPercentage) {
+    if (totalPercentage < 40) {
+        return "Bad luck. Try practicing with some lower year levels to build your confidence and skills.";
+    } else if (totalPercentage < 50) {
+        return "That was a good effort, but you may need to work on some expressions.";
+    } else if (totalPercentage < 60) {
+        return "Congratulations you passed. Keep practicing at this year level to improve your score.";
+    } else if (totalPercentage < 75) {
+        return "Well done. That was a good effort.";
+    } else if (totalPercentage < 85) {
+        return "Good job. You should try the next year level in your next test.";
+    } else {
+        return "Excellent work! You really know your stuff. Try the harder levels next time.";
+    }
+}
 
-                if (userAnswer.equalsIgnoreCase("Q")) {
-                    return;
-                }
 
-                if (userAnswer.equalsIgnoreCase("H")) {
-                    hintCount++;
-                    hintAnswer = generateHint(currentQuestion.getAnswer(), hintCount);
-                    if (hintCount >= currentQuestion.getAnswer().length()) {
-                        System.out.println("Bad luck that was incorrect. The correct answer was " + currentQuestion.getAnswer() + ".");
-	                        break;
-	                    }
-	                    continue;
-	                }
-	
-	                if (userAnswer.equals(currentQuestion.getAnswer())) {
-	                    correctAnswers++;
-	                    System.out.println("Correct! Well Done!");
-	                    break;
-	                } else {
-	                    System.out.println("Bad luck that was incorrect. The correct answer was " + currentQuestion.getAnswer() + ".");
-	                    break;
-	                }
-	            }
-	
-	            double percentage = ((double) correctAnswers / (i + 1)) * 100;
-                //long roundedPercentage = Math.round(percentage);
-	            System.out.println("Your current percentage is " + df.format(percentage) + "%");
-	
-	            // Suggest difficulty change after each block of 5 questions
-	            if ((i + 1) % 5 == 0) {
-	                if (percentage > 75 && yearLevel < 7) {
-	                    System.out.println("You are doing really well! Maybe try a harder difficulty.");
-	                } else if (percentage < 30 && yearLevel > 0) {
-	                    System.out.println("It seems you are having some trouble. Maybe try an easier difficulty.");
-	                }
-	            }
-	        }
-	
-	        double totalPercentage = ((double) correctAnswers / totalQuestions) * 100;
-	        System.out.println("Your total percentage was " +  df.format(totalPercentage) + "%");
-	
-	        if (totalPercentage < 40) {
-	            System.out.println("Bad luck. Try practicing with some lower year levels to build your confidence and skills.");
-	        } else if (totalPercentage < 50) {
-	            System.out.println("That was a good effort, but you may need to work on some expressions.");
-	        } else if (totalPercentage < 60) {
-	            System.out.println("Congratulations you passed. Keep practicing at this year level to improve your score.");
-	        } else if (totalPercentage < 75) {
-	            System.out.println("Well done. That was a good effort.");
-	        } else if (totalPercentage < 85) {
-	            System.out.println("Good job. You should try the next year level in your next test.");
-	        } else {
-	            System.out.println("Excellent work! You really know your stuff. Try the harder levels next time.");
-	        }
-	    }
-	
-	    private String generateHint(String answer, int hintCount) {
-	        StringBuilder hint = new StringBuilder();
-	        for (int i = 0; i < answer.length(); i++) {
-	            if (i < answer.length() - hintCount) {
-	                hint.append("_");
-	            } else {
-	                hint.append(answer.charAt(i));
-	            }
-	        }
-	        return hint.toString();
-	    }
+private int getValidYearLevel() {
+    while (true) {
+        if(!scan.hasNextInt()){
+            System.out.println("Invalid input. Please enter a valid year level (0-7)");
+            scan.next();
+            continue;
+        }
+        int yearLevel = scan.nextInt();
+        if (yearLevel < 0 || yearLevel > 7) {
+            System.out.println("Invalid year level. Please try again.");
+            continue;
+        }
+        return yearLevel;
+    }
+}
+
+private int getValidNumQuestions() {
+    while (true) {
+        if(!scan.hasNextInt()){
+            System.out.println("Invalid input. Please enter a valid number of questions. (0-5)");
+            scan.next();
+            continue;
+        }
+        int numQuestions = scan.nextInt();
+        if (numQuestions < 0 || numQuestions > 5) {
+            System.out.println("Invalid number of questions. Please try again.");
+            continue;
+        }
+        return numQuestions;
+
+    }
+}
 //-------------------------operational methods------------------------------
 
     /**
@@ -227,84 +246,21 @@ public MathsHelper() {
      * @return boolean based on user's confirmation of correct data entry
      */
     public boolean confirmSessionDetails(int year, int questions) {
-        String yearLevel = (year == 0) ? "Reception" : "Year " + year;
-        int numQuestions = getNumberQuestions(questions);
+        while (true) {
 
+            String yearLevel = (year == 0) ? "Reception" : "Year " + year;
+            int numQuestions = questions * 10;
 
-        System.out.print("You are a " + yearLevel + " student and want to do " + numQuestions + " questions. Is this correct (Y/N)?: ");
+            System.out.print("You are a " + yearLevel + " student and want to do " + numQuestions + " questions. Is this correct (Y/N)?: ");
 
-        String choice = scan.next();
-        // if (choice.equalsIgnoreCase("Q")) {
-        //     break;
-        // }
-        if (choice.equalsIgnoreCase("N") || choice.equalsIgnoreCase("Q")) {
-            return false;
+            String userChoice = scan.next();
+
+            return userChoice.equalsIgnoreCase("Y");
+
         }
 
-        return choice.equalsIgnoreCase("Y");
     }
 
-
-
-
-    interface YearLevel {
-        YearLevelType getYearLevelType(int yearLevel);
-    }
-
-    enum YearLevelType {
-        RECEPTION,
-        YEAR_1,
-        YEAR_2,
-        YEAR_3,
-        YEAR_4,
-        YEAR_5,
-        YEAR_6,
-        YEAR_7;
-        public static YearLevelType getYearLevelType(int year) {
-            switch(year) {
-                case 0: return RECEPTION;
-                case 1: return YEAR_1;
-                case 2: return YEAR_2;
-                case 3: return YEAR_3;
-                case 4: return YEAR_4;
-                case 5: return YEAR_5;
-                case 6: return YEAR_6;
-                case 7: return YEAR_7;
-                default: throw new IllegalArgumentException("Invalid year: " + year);
-            }
-        }
-    }
-    public static int getNumberQuestions(int numQuestions) {
-        switch(numQuestions) {
-            case 1: return 10;
-            case 2: return 20;
-            case 3: return 30;
-            case 4: return 40;
-            case 5: return 50;
-            default: return 10;
-        }
-    }
-
-
-
-    public boolean isYearLevel(String choice) {
-        try {
-
-            int c = Integer.parseInt(choice);
-            return c >= 0 && c <= 7;
-
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-    public boolean isQuestion(String choice) {
-        try {
-            int c = Integer.parseInt(choice);
-            return c >= 0 && c <= 5;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
     public int getYearLevel() {
         return yearLevel;
     }
@@ -327,20 +283,5 @@ public MathsHelper() {
 
     public void setQuiz(QuestionGenerator quiz) {
         this.quiz = quiz;
-    }
-    public String getMessageForPercentage(double percentage) {
-        if (percentage < 40) {
-            return "Bad luck. Try practicing with some lower year levels to build your confidence and skills.";
-        } else if (percentage < 50) {
-            return "That was a good effort, but you may need to work on some expressions.";
-        } else if (percentage < 60) {
-            return "Congratulations you passed. Keep practicing at this year level to improve your score.";
-        } else if (percentage < 75) {
-            return "Well done. That was a good effort.";
-        } else if (percentage < 85) {
-            return "Good job. You should try the next year level in your next test.";
-        } else {
-            return "Excellent work! You really know your stuff. Try the harder levels next time.";
-        }
     }
 }
